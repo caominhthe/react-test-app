@@ -1,40 +1,45 @@
 import React from 'react';
 import Controller from './controller';
 import Player from './player';
-import {TablePosition} from '../../constants/general'
-import {DeckApi} from '../../apis/deck';
+import { TablePosition } from '../../constants/general'
+import { DeckApi } from '../../apis/deck';
 import ScoreBoard from './scoreboard';
+import { finished } from 'stream';
 
 
 const DEFAULT_BET = 5000
 const TOTAL_POINT = 20000
+const STRAIGH_WIN = 9999;
+
+const JQK = ['JACK', 'QUEEN', 'KING'];
+
 
 const PLAYERS = [
   {
     id: 1,
-    name: 'Player 1',
-    point: TOTAL_POINT,
+    name: 'You',
+    point: 0,
     cards: [],
     currentPoint: 0
   },
   {
     id: 2,
     name: 'Player 2',
-    point: TOTAL_POINT,
+    point: 0,
     cards: [],
     currentPoint: 0
   },
   {
     id: 3,
     name: 'Player 3',
-    point: TOTAL_POINT,
+    point: 0,
     cards: [],
     currentPoint: 0
   },
   {
     id: 4,
     name: 'Player 4',
-    point: TOTAL_POINT,
+    point: 0,
     cards: [],
     currentPoint: 0
   }
@@ -68,10 +73,29 @@ class Table extends React.Component {
 
   _onShuffleClick = async () => {
     try {
+      const deckId = this.state.deck_id;
       const deckApi = new DeckApi();
-      deckApi.shuffle();
+      await deckApi.shuffle(deckId);
     } catch (error) {
       console.log(error)
+    }
+  }
+
+  calculatePoint = (cards) => {
+    if (cards.every(elem => JQK.includes(elem.value.toUpperCase()))) {
+      return STRAIGH_WIN;
+    }
+    return cards.reduce((res, cur) => {
+      const valueCard = JQK.includes(cur.value.toUpperCase()) ? 10 : (cur.value.toUpperCase() === 'ACE' ? 1 : Number(cur.value))
+      return res + valueCard
+    }, 0) % 10
+
+  }
+
+  straightWinCheck() {
+    const { players } = this.state;
+    if (players.find(player => player.currentPoint == STRAIGH_WIN)) {
+      this._onRevealClick();
     }
   }
 
@@ -91,13 +115,10 @@ class Table extends React.Component {
         const dataResponse = await deckApi.draw(deckId);
         const { cards } = dataResponse.data
         clonedPlayers[i].cards = cards
-        clonedPlayers[i].point -= DEFAULT_BET
-        clonedPlayers[i].currentPoint = cards.reduce((res, cur) => {
-
-          const valueCard = ['JACK', 'QUEEN', 'KING'].includes(cur.value.toUpperCase()) ? 10 : (cur.value.toUpperCase() === 'ACE' ? 1 : Number(cur.value))
-          return res + valueCard
-        }, 0) % 10
+        clonedPlayers[i].currentPoint = this.calculatePoint(cards);
       }
+
+      this.straightWinCheck();
 
       this.setState({
         players: clonedPlayers
@@ -120,7 +141,7 @@ class Table extends React.Component {
     for (let i = 0; i < winners.length; i++) {
       for (let j = 0; j < clonedPlayers.length; j++) {
         if (winners[i].id === clonedPlayers[j].id) {
-          clonedPlayers[j].point += (4 * DEFAULT_BET / winners.length)
+          clonedPlayers[j].point += Math.floor((4 * DEFAULT_BET / winners.length));
         }
       }
     }
@@ -147,13 +168,12 @@ class Table extends React.Component {
             totalRound={5}
             players={players}
           />
-          <div>
-            <span>Menu</span>
-            <button onClick={this._onShuffleClick}>Shuffle</button>
-            <button onClick={this._onDrawClick}>Draw</button>
-            <button onClick={this._onRevealClick}>Reveal</button>
-          </div>
+          <Controller
+            shuffle={this._onShuffleClick}
+            draw={this._onDrawClick}
+            reveal={this._onRevealClick} />
         </div>
+
         <div className="player-list">
           {
             players.map(player => (

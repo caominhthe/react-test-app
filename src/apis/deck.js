@@ -11,7 +11,5 @@ export class DeckApi {
 
   shuffle = async(id) => {
     return await axios.get(`https://deckofcardsapi.com/api/deck/${id}/shuffle/`);
-   
-
   }
 }

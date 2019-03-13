@@ -8,9 +8,9 @@ class Controller extends React.Component {
   render() {
     return (
       <ButtonToolbar>
-      <Button variant="primary">Draw</Button>
-      <Button variant="primary">Shuffle</Button>
-      <Button variant="primary">Reveal</Button>
+      <Button variant="primary" onClick={this.props.draw}>Draw</Button>
+      <Button variant="primary" onClick={this.props.shuffle}>Shuffle</Button>
+      <Button variant="primary" onClick={this.props.reveal}>Reveal</Button>
       </ButtonToolbar>
     );
   }
