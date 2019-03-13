@@ -1,99 +1,38 @@
 import React from 'react';
 import Controller from './controller';
 import Player from './player';
-import { TablePosition } from '../../constants/general'
 import { DeckApi } from '../../apis/deck';
 import ScoreBoard from './scoreboard';
-import { finished } from 'stream';
+import { connect } from 'react-redux'
+import * as actionCreators from '../../actions';
+import { STRAIGH_WIN } from '../../constants/general';
+import { NEXT_ROUND } from '../../constants/actionTypes';
+import { join } from 'path';
 
-
-const DEFAULT_BET = 5000
-const TOTAL_POINT = 20000
-const STRAIGH_WIN = 9999;
-
-const JQK = ['JACK', 'QUEEN', 'KING'];
-
-
-const PLAYERS = [
-  {
-    id: 1,
-    name: 'You',
-    point: 0,
-    cards: [],
-    currentPoint: 0
-  },
-  {
-    id: 2,
-    name: 'Player 2',
-    point: 0,
-    cards: [],
-    currentPoint: 0
-  },
-  {
-    id: 3,
-    name: 'Player 3',
-    point: 0,
-    cards: [],
-    currentPoint: 0
-  },
-  {
-    id: 4,
-    name: 'Player 4',
-    point: 0,
-    cards: [],
-    currentPoint: 0
-  }
-]
 
 class Table extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      isReveal: false,
-      deck: null,
-      players: PLAYERS,
-      currentRound: 0
-    }
+
+  state = {
+    isReveal: false,
+    isInGame: false,
+    currentRound: 0
   }
 
-  async componentDidMount() {
-    try {
-      const deckApi = new DeckApi();
-      const dataResponse = await deckApi.getDeck();
-      const deck = dataResponse.data
-
-      console.log(deck);
-      this.setState({
-        deck
-      })
-    } catch (error) {
-      console.log(error)
-    }
+  componentDidMount() {
+      this.props.fetchDeck();
   }
 
   _onShuffleClick = async () => {
     try {
-      const deckId = this.state.deck_id;
-      const deckApi = new DeckApi();
-      await deckApi.shuffle(deckId);
+      const { deck, shuffleDeck } = this.props
+      await shuffleDeck(deck.deck_id)
     } catch (error) {
       console.log(error)
     }
   }
 
-  calculatePoint = (cards) => {
-    if (cards.every(elem => JQK.includes(elem.value.toUpperCase()))) {
-      return STRAIGH_WIN;
-    }
-    return cards.reduce((res, cur) => {
-      const valueCard = JQK.includes(cur.value.toUpperCase()) ? 10 : (cur.value.toUpperCase() === 'ACE' ? 1 : Number(cur.value))
-      return res + valueCard
-    }, 0) % 10
-
-  }
-
-  straightWinCheck() {
-    const { players } = this.state;
+  _straightWinCheck() {
+    const { players } = this.props;
     if (players.find(player => player.currentPoint == STRAIGH_WIN)) {
       this._onRevealClick();
     }
@@ -101,70 +40,68 @@ class Table extends React.Component {
 
   _onDrawClick = async () => {
     this.setState({
-      isReveal: false
+      isReveal: false,
+      isInGame: true
     })
 
     try {
-      const { deck, players } = this.state;
-      console.log(deck);
-      const deckId = deck.deck_id;
-      const clonedPlayers = [...players]
-
-      const deckApi = new DeckApi();
-      for (let i = 0; i < players.length; i++) {
-        const dataResponse = await deckApi.draw(deckId);
-        const { cards } = dataResponse.data
-        clonedPlayers[i].cards = cards
-        clonedPlayers[i].currentPoint = this.calculatePoint(cards);
+      const { deck, drawCard, nextRound } = this.props
+      if (deck.remaining < 12 ) {
+        alert('Not enough card for next round, please Shuffle to continue');
+        return;
       }
-
-      this.straightWinCheck();
-
-      this.setState({
-        players: clonedPlayers
-      })
-
-      console.log('Draw completed')
+      nextRound();
+      await drawCard(deck.deck_id)
+      this._straightWinCheck();
     } catch (error) {
       console.log(error)
     }
   }
 
-  _onRevealClick = () => {
-    const { players } = this.state
-
+  _findWinners(players) {
     const maxPoint = Math.max(...players.map(player => player.currentPoint))
-    const winners = players.filter(player => player.currentPoint === maxPoint)
+    return players.filter(player => player.currentPoint === maxPoint)
+  }
 
-    const clonedPlayers = [...players]
+  _onRevealClick = () => {
+    const { players, addPointWinners, defaultBet } = this.props
 
-    for (let i = 0; i < winners.length; i++) {
-      for (let j = 0; j < clonedPlayers.length; j++) {
-        if (winners[i].id === clonedPlayers[j].id) {
-          clonedPlayers[j].point += Math.floor((4 * DEFAULT_BET / winners.length));
-        }
-      }
-    }
+    if (!this.state.isInGame) {
+      alert('Draw cards first please');
+    } ;
 
     this.setState({
       isReveal: true,
-      players: clonedPlayers
+      isInGame: false
     })
+    
+    setTimeout(() => {
+      const winners = this._findWinners(players)
+      const winPoint = Math.floor((defaultBet * players.length) / winners.length)
+      addPointWinners(winners, winPoint);
+      this._findFinalWinner();
+    }, 1000)
+  }
 
-    setTimeout(
-      () => {
-        alert(`The winner at round is: ${winners.map(winner => winner.name).join(', ')}`)
-      }, 1000)
+  _findFinalWinner = () => {
+    const { players, currentRound, totalRound } = this.props
+    if (currentRound < totalRound) return;
+    const maxPoint = Math.max(...players.map(player => player.point));
+    const finalWinner = players.filter(player => player.point === maxPoint)
+    if (finalWinner.length > 0) {
+      alert(`Final winner is: ${finalWinner.map(player => player.name).join(', ')} , continue draw for next game`);
+    }
   }
 
   render() {
-    const { players, isReveal } = this.state
+
+    const { players, currentRound } = this.props
 
     return (
       <div className="board-game">
         <div>
           <ScoreBoard
-            currentRound={0}
+            currentRound={currentRound}
             totalRound={5}
             players={players}
           />
@@ -180,7 +117,7 @@ class Table extends React.Component {
               <Player
                 key={player.id}
                 player={player}
-                isReveal={isReveal}
+                isReveal={this.state.isReveal}
               />
             ))
           }
@@ -190,6 +127,17 @@ class Table extends React.Component {
   }
 }
 
-export default Table
+const mapDispatchToProps = (dispatch) => {
+  return {
+    fetchDeck: async () => dispatch(actionCreators.fetchDeck()),
+    shuffleDeck: async (deckId) => dispatch(actionCreators.shuffleDeck(deckId)),
+    drawCard: async (playerId) => dispatch(actionCreators.drawCard(playerId)),
+    addPointWinners: (winners, points) => dispatch(actionCreators.addPointWinners(winners, points)),
+    nextRound: () => dispatch({ type: NEXT_ROUND }),
+  }
+}
+const mapStateToProps = (state) => {
+  return state
+}
 
-
+export default connect(mapStateToProps, mapDispatchToProps)(Table)

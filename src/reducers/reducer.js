@@ -9,40 +9,46 @@ import {
   REQUEST_DRAW_CARD_SUCCESS,
   REQUEST_DRAW_CARD_ERROR,
   ADD_POINT_WINNERS,
+  NEXT_ROUND
 } from '../constants/actionTypes'
 
 const PLAYERS = [
   {
     id: 1,
-    name: 'Player 1',
+    name: 'You',
     point: 0,
-    cards: []
+    cards: [],
+    currentPoint: 0
   },
   {
     id: 2,
     name: 'Player 2',
     point: 0,
-    cards: []
+    cards: [],
+    currentPoint: 0
   },
   {
     id: 3,
     name: 'Player 3',
     point: 0,
-    cards: []
+    cards: [],
+    currentPoint: 0
   },
   {
     id: 4,
     name: 'Player 4',
     point: 0,
-    cards: []
+    cards: [],
+    currentPoint: 0
   }
 ]
+
 
 const initialState = {
   deck: null,
   players: PLAYERS,
   totalRound: 5,
-  currentRound: 1,
+  currentRound: 0,
   defaultBet: 5000,
   isLoading: false,
   error: null
@@ -106,6 +112,7 @@ const rootReducer = (state = initialState, action) => {
       return {
         ...state,
         players: action.players,
+        deck: action.deck,
         isLoading: false,
         error: null
       }
@@ -131,6 +138,22 @@ const rootReducer = (state = initialState, action) => {
       return {
         ...state,
         players,
+      }
+    }
+    case NEXT_ROUND: {
+      let nextRound
+      const players = [...state.players]
+      if (state.currentRound == state.totalRound) {
+        nextRound = 1;
+        
+        players.forEach(player => player.point = 0);
+      } else {
+        nextRound = state.currentRound + 1;
+      }
+      return {
+        ...state,
+        currentRound: nextRound,
+        players
       }
     }
 
