@@ -1,17 +1,19 @@
 import React from 'react';
-import Controller from './controller';
-import Player from './player';
-import { DeckApi } from '../../apis/deck';
-import ScoreBoard from './scoreboard';
 import { connect } from 'react-redux'
-import * as actionCreators from '../../actions';
+import {
+  drawCard,
+  fetchDeck,
+  shuffleDeck,
+  addPointWinners,
+  actionTypes,
+} from '../../actions';
 import { STRAIGH_WIN } from '../../constants/general';
-import { NEXT_ROUND } from '../../constants/actionTypes';
-import { join } from 'path';
-
+import Player from '../Player';
+import Controller from '../Controller';
+import ScoreBoard from '../Scoreboard';
+import './styles.scss';
 
 class Table extends React.Component {
-
   state = {
     isReveal: false,
     isInGame: false,
@@ -19,7 +21,7 @@ class Table extends React.Component {
   }
 
   componentDidMount() {
-      this.props.fetchDeck();
+    this.props.fetchDeck();
   }
 
   _onShuffleClick = async () => {
@@ -33,7 +35,7 @@ class Table extends React.Component {
 
   _straightWinCheck() {
     const { players } = this.props;
-    if (players.find(player => player.currentPoint == STRAIGH_WIN)) {
+    if (players.find(player => player.currentPoint === STRAIGH_WIN)) {
       this._onRevealClick();
     }
   }
@@ -94,24 +96,11 @@ class Table extends React.Component {
   }
 
   render() {
-
     const { players, currentRound } = this.props
 
     return (
-      <div className="board-game">
-        <div>
-          <ScoreBoard
-            currentRound={currentRound}
-            totalRound={5}
-            players={players}
-          />
-          <Controller
-            shuffle={this._onShuffleClick}
-            draw={this._onDrawClick}
-            reveal={this._onRevealClick} />
-        </div>
-
-        <div className="player-list">
+      <div className="Table-wrapper">
+        <div className="Table-playground">
           {
             players.map(player => (
               <Player
@@ -122,22 +111,31 @@ class Table extends React.Component {
             ))
           }
         </div>
+        <div className="Table-actions">
+          <ScoreBoard
+            currentRound={currentRound}
+            totalRound={5}
+            players={players}
+          />
+          <Controller
+            onShuffle={this._onShuffleClick}
+            onDraw={this._onDrawClick}
+            onReveal={this._onRevealClick}
+          />
+        </div>
       </div>
     );
   }
 }
 
-const mapDispatchToProps = (dispatch) => {
-  return {
-    fetchDeck: async () => dispatch(actionCreators.fetchDeck()),
-    shuffleDeck: async (deckId) => dispatch(actionCreators.shuffleDeck(deckId)),
-    drawCard: async (playerId) => dispatch(actionCreators.drawCard(playerId)),
-    addPointWinners: (winners, points) => dispatch(actionCreators.addPointWinners(winners, points)),
-    nextRound: () => dispatch({ type: NEXT_ROUND }),
-  }
-}
-const mapStateToProps = (state) => {
-  return state
-}
+const mapDispatchToProps = dispatch => ({
+  fetchDeck: async () => dispatch(fetchDeck()),
+  shuffleDeck: async deckId => dispatch(shuffleDeck(deckId)),
+  drawCard: async playerId => dispatch(drawCard(playerId)),
+  addPointWinners: (winners, points) => dispatch(addPointWinners(winners, points)),
+  nextRound: () => dispatch({ type: actionTypes.NEXT_ROUND }),
+});
+
+const mapStateToProps = state => state;
 
 export default connect(mapStateToProps, mapDispatchToProps)(Table)

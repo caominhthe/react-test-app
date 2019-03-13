@@ -1,0 +1,18 @@
+.Controller-wrapper {
+  flex-direction: column;
+  margin-top: 50px;
+
+  button {
+    display: block;
+    margin: 0 auto;
+    text-transform: uppercase;
+    font-size: 18px;
+    width: 150px;
+    padding: 0;
+    line-height: 48px;
+
+    & + button {
+      margin-top: 20px;
+    }
+  }
+}

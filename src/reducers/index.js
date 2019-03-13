@@ -1,16 +1,4 @@
-import {
-  REQUEST_FETCH_DECK_START,
-  REQUEST_FETCH_DECK_SUCCESS,
-  REQUEST_FETCH_DECK_ERROR,
-  REQUEST_SHUFFLE_DECK_START,
-  REQUEST_SHUFFLE_DECK_SUCCESS,
-  REQUEST_SHUFFLE_DECK_ERROR,
-  REQUEST_DRAW_CARD_START,
-  REQUEST_DRAW_CARD_SUCCESS,
-  REQUEST_DRAW_CARD_ERROR,
-  ADD_POINT_WINNERS,
-  NEXT_ROUND
-} from '../constants/actionTypes'
+import { actionTypes } from '../actions';
 
 const PLAYERS = [
   {
@@ -43,7 +31,6 @@ const PLAYERS = [
   }
 ]
 
-
 const initialState = {
   deck: null,
   players: PLAYERS,
@@ -56,14 +43,14 @@ const initialState = {
 
 const rootReducer = (state = initialState, action) => {
   switch (action.type) {
-    case REQUEST_FETCH_DECK_START: {
+    case actionTypes.REQUEST_FETCH_DECK_START: {
       return {
         ...state,
         isLoading: true,
         error: null
       }
     }
-    case REQUEST_FETCH_DECK_SUCCESS: {
+    case actionTypes.REQUEST_FETCH_DECK_SUCCESS: {
       return {
         ...state,
         deck: action.deck,
@@ -71,21 +58,21 @@ const rootReducer = (state = initialState, action) => {
         error: null
       }
     }
-    case REQUEST_FETCH_DECK_ERROR: {
+    case actionTypes.REQUEST_FETCH_DECK_ERROR: {
       return {
         ...state,
         isLoading: false,
         error: action.error
       }
     }
-    case REQUEST_SHUFFLE_DECK_START: {
+    case actionTypes.REQUEST_SHUFFLE_DECK_START: {
       return {
         ...state,
         isLoading: true,
         error: null
       }
     }
-    case REQUEST_SHUFFLE_DECK_SUCCESS: {
+    case actionTypes.REQUEST_SHUFFLE_DECK_SUCCESS: {
       return {
         ...state,
         deck: action.deck,
@@ -93,7 +80,7 @@ const rootReducer = (state = initialState, action) => {
         error: null
       }
     }
-    case REQUEST_SHUFFLE_DECK_ERROR: {
+    case actionTypes.REQUEST_SHUFFLE_DECK_ERROR: {
       return {
         ...state,
         isLoading: false,
@@ -101,14 +88,14 @@ const rootReducer = (state = initialState, action) => {
       }
     }
 
-    case REQUEST_DRAW_CARD_START: {
+    case actionTypes.REQUEST_DRAW_CARD_START: {
       return {
         ...state,
         isLoading: true,
         error: null
       }
     }
-    case REQUEST_DRAW_CARD_SUCCESS: {
+    case actionTypes.REQUEST_DRAW_CARD_SUCCESS: {
       return {
         ...state,
         players: action.players,
@@ -117,14 +104,14 @@ const rootReducer = (state = initialState, action) => {
         error: null
       }
     }
-    case REQUEST_DRAW_CARD_ERROR: {
+    case actionTypes.REQUEST_DRAW_CARD_ERROR: {
       return {
         ...state,
         isLoading: false,
         error: action.error
       }
     }
-    case ADD_POINT_WINNERS: {
+    case actionTypes.ADD_POINT_WINNERS: {
       const { winners, points } = action
       const players = [...state.players]
       for (let i = 0; i < winners.length; i++) {
@@ -140,10 +127,10 @@ const rootReducer = (state = initialState, action) => {
         players,
       }
     }
-    case NEXT_ROUND: {
+    case actionTypes.NEXT_ROUND: {
       let nextRound
       const players = [...state.players]
-      if (state.currentRound == state.totalRound) {
+      if (state.currentRound === state.totalRound) {
         nextRound = 1;
         
         players.forEach(player => player.point = 0);

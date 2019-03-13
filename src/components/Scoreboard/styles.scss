@@ -1,0 +1,38 @@
+.Scoreboard-wrapper {
+  background: #f8f9fa;
+  padding: 15px 0 25px;
+  border-radius: 10px;
+  color: #343a40;
+
+  .round {
+    font-size: 48px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+
+  .player {
+    font-size: 16px;
+
+    & + .player {
+      margin-top: 4px;
+    }
+  }
+
+  .name {
+    display: inline-block;
+    text-align: right;
+    width: 50%;
+    vertical-align: middle;
+  }
+
+  .point {
+    display: inline-block;
+    text-align: left;
+    width: calc(50% - 3px);
+    margin-left: 3px;
+    font-size: 22px;
+    font-weight: bold;
+    vertical-align: middle;
+  }
+}

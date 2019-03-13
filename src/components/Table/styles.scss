@@ -1,0 +1,18 @@
+.Table-wrapper {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  background-image: url("../../assets/bg.jpg");
+  background-repeat: no-repeat;
+  background-size:cover;
+
+  .Table-playground {
+    position: relative;
+    width: calc(100% - 250px);
+  }
+
+  .Table-actions {
+    width: 250px;
+    padding: 20px;
+  }
+}

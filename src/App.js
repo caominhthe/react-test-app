@@ -1,23 +1,12 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
-import Table from './components/Table/table';
-import './App.scss';
-import { connect } from 'react-redux';
+import React from 'react';
+import { Provider } from 'react-redux'
+import store from './store';
+import Table from './components/Table';
 
-const mapStateToProps = state => {
-  return state;
-}
+const App = () => (
+  <Provider store={store}>
+    <Table />
+  </Provider>
+);
 
-const mapDispatchToProps = dispatch => ({
-
-});
-
-class App extends Component {
-  render() {
-    return (
-    <Table></Table>
-    );
-  }
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(App);
+export default App;

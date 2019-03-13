@@ -1,41 +1,36 @@
-import axios from 'axios'
-import {
-  REQUEST_SHUFFLE_DECK_START,
-  REQUEST_SHUFFLE_DECK_SUCCESS,
-  REQUEST_SHUFFLE_DECK_ERROR,
-
-  REQUEST_DRAW_CARD_START,
-  REQUEST_DRAW_CARD_SUCCESS,
-  REQUEST_DRAW_CARD_ERROR,
-
-  REQUEST_FETCH_DECK_START,
-  REQUEST_FETCH_DECK_SUCCESS,
-  REQUEST_FETCH_DECK_ERROR,
-
-  ADD_POINT_WINNERS
-} from '../constants/actionTypes'
-
-import {
-  BASE_URL, STRAIGH_WIN
-} from '../constants/general'
+import { STRAIGH_WIN } from '../constants/general'
 import { DeckApi } from '../apis/deck';
 
 const JQK = ['JACK', 'QUEEN', 'KING'];
 
+export const actionTypes = {
+  REQUEST_FETCH_DECK_START: 'REQUEST_FETCH_DECK_START',
+  REQUEST_FETCH_DECK_SUCCESS: 'REQUEST_FETCH_DECK_SUCCESS',
+  REQUEST_FETCH_DECK_ERROR: 'REQUEST_FETCH_DECK_ERROR',
+  REQUEST_SHUFFLE_DECK_START: 'REQUEST_SHUFFLE_DECK_START',
+  REQUEST_SHUFFLE_DECK_SUCCESS: 'REQUEST_SHUFFLE_DECK_SUCCESS',
+  REQUEST_SHUFFLE_DECK_ERROR: 'REQUEST_SHUFFLE_DECK_ERROR',
+  REQUEST_DRAW_CARD_START: 'REQUEST_DRAW_CARD_START',
+  REQUEST_DRAW_CARD_SUCCESS: 'REQUEST_DRAW_CARD_SUCCESS',
+  REQUEST_DRAW_CARD_ERROR: 'REQUEST_DRAW_CARD_ERROR',
+  ADD_POINT_WINNERS: 'ADD_POINT_WINNERS',
+  NEXT_ROUND: 'NEXT_ROUND'
+};
+
 export const fetchDeck = () => async dispatch => {
   try {
     const deckApi = new DeckApi();
-    dispatch({ type: REQUEST_FETCH_DECK_START })
+    dispatch({ type: actionTypes.REQUEST_FETCH_DECK_START })
     const dataResponse = await deckApi.getDeck();
     const deck = dataResponse.data
 
     dispatch({
-      type: REQUEST_FETCH_DECK_SUCCESS,
+      type: actionTypes.REQUEST_FETCH_DECK_SUCCESS,
       deck,
     })
   } catch (error) {
     dispatch({
-      type: REQUEST_FETCH_DECK_ERROR,
+      type: actionTypes.REQUEST_FETCH_DECK_ERROR,
       error
     })
   }
@@ -44,19 +39,19 @@ export const fetchDeck = () => async dispatch => {
 export const shuffleDeck = (deckId) => async dispatch => {
   try {
     const deckApi = new DeckApi();
-    dispatch({ type: REQUEST_SHUFFLE_DECK_START })
+    dispatch({ type: actionTypes.REQUEST_SHUFFLE_DECK_START })
     const dataResponse = await deckApi.shuffle(deckId);
     const deck = dataResponse.data
     alert('Suffle success');
 
     dispatch({
-      type: REQUEST_SHUFFLE_DECK_SUCCESS,
+      type: actionTypes.REQUEST_SHUFFLE_DECK_SUCCESS,
       deck
     })
   } catch (error) {
 
     dispatch({
-      type: REQUEST_SHUFFLE_DECK_ERROR,
+      type: actionTypes.REQUEST_SHUFFLE_DECK_ERROR,
       error
     })
   }
@@ -76,7 +71,7 @@ export const drawCard = (deckId) => async (dispatch, getState) => {
   try {
     const deckApi = new DeckApi();
 
-    dispatch({ type: REQUEST_DRAW_CARD_START })
+    dispatch({ type: actionTypes.REQUEST_DRAW_CARD_START })
 
     const { players, deck } = getState()
     const clonePlayers = [...players]
@@ -92,21 +87,21 @@ export const drawCard = (deckId) => async (dispatch, getState) => {
     console.log(clonePlayers);
 
     dispatch({
-      type: REQUEST_DRAW_CARD_SUCCESS,
+      type: actionTypes.REQUEST_DRAW_CARD_SUCCESS,
       players: clonePlayers,
       deck
     })
 
   } catch (error) {
     dispatch({
-      type: REQUEST_DRAW_CARD_ERROR,
+      type: actionTypes.REQUEST_DRAW_CARD_ERROR,
       error
     })
   }
 }
 
 export const addPointWinners = (winners, points) => ({
-  type: ADD_POINT_WINNERS,
+  type: actionTypes.ADD_POINT_WINNERS,
   winners,
   points
 })
